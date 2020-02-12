@@ -73,14 +73,41 @@ def myID3(data, attributes, target_name, gain_ratio=False):
             dtree.children[i].value.edge = attribute
             i += 1
         return dtree
-            
 
+def get_result(dtree, test):
+    if dtree.value.result is not None:
+        return dtree.value.result
+    
+    curr_attr = dtree.value.current_node
+    curr_edge = test[curr_attr].iloc[0]
+    
+    # Find index of the edge in the tree children
+    i = 0;
+    for child in dtree.children:
+        if curr_edge == child.value.edge:
+            break
+        else:
+            i += 1
+
+    return get_result(dtree.children[i], test)
+            
+def predict(dtree, data_test):
+    predicted_result = list()
+ 
+    # Traverse through each row
+    for i in range(len(data_test)):
+        predicted_result.append(get_result(dtree, data_test.iloc[[i]]))
+    
+    return predicted_result
+        
 
 data = pd.read_csv("play_tennis.csv")
 # print('INFO GAIN OUTLOOK', Calculate.info_gain(data['outlook'], data['play']))
 # print('INFO GAIN TEMP', Calculate.info_gain(data['temp'], data['play']))
 # print('INFO GAIN HUMIDITY', Calculate.info_gain(data['humidity'], data['play']))
 # print('INFO GAIN WIND', Calculate.info_gain(data['wind'], data['play']))
-print(data)
-dtree = myID3(data, ['outlook', 'temp', 'humidity', 'wind'], 'play', True)
+dtree = myID3(data, ['outlook', 'temp', 'humidity', 'wind'], 'play')
 dtree.print_tree()
+
+hasil = predict(dtree, data[['outlook', 'temp', 'humidity', 'wind']])
+print(hasil)
