@@ -1,5 +1,6 @@
 
 import math
+import numpy as np
 
 class Calculate:
     @staticmethod
@@ -142,3 +143,8 @@ class Calculate:
                 best_number = value_dict[value]
 
         return best_value
+
+    @staticmethod
+    def get_list_rand_numbers(total, size):
+        return np.random.choice(int(total), replace=False, size=int(size))
+        
