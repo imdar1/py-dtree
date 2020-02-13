@@ -28,7 +28,7 @@ class MyID3():
             return tree
         
         # Nothing attribute shall be chosen
-        if len(attributes) == 0:
+        if len(attributes) == 0: # Masi salah
             # Set current_node, info_gain, values
             value_list = Calculate.get_unique_data(data, target_name)
             value_dict = dict()
@@ -107,6 +107,7 @@ class MyID3():
         
 
 data = pd.read_csv("play_tennis.csv")
+# print(list(data['outlook']))
 dTree = MyID3(gain_ratio=True);
 dtree_view = dTree.fit(data, ['outlook', 'temp', 'humidity', 'wind'], 'play')
 dtree_view.print_tree()
