@@ -42,8 +42,6 @@ class Calculate:
     @staticmethod
     def split_continue(data_attr, data_target, splitter):
         attr_dict = dict()
-        # splitter = (data_attr.iloc[split_index]+data_attr.iloc[split_index+1])/2
-        i = 0
         attr_dict['>'] = []
         attr_dict['<='] = []
         for i in range(len(data_attr)):
@@ -147,4 +145,3 @@ class Calculate:
     @staticmethod
     def get_list_rand_numbers(total, size):
         return np.random.choice(int(total), replace=False, size=int(size))
-        
