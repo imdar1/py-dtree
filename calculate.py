@@ -37,15 +37,33 @@ class Calculate:
             i += 1
         
         return attr_dict
-        
 
     @staticmethod
-    def info_gain(data_attr, data_target):
+    def split_continue(data_attr, data_target, splitter):
+        attr_dict = dict()
+        # splitter = (data_attr.iloc[split_index]+data_attr.iloc[split_index+1])/2
+        i = 0
+        attr_dict['>'] = []
+        attr_dict['<='] = []
+        for i in range(len(data_attr)):
+            if data_attr.iloc[i] > splitter:
+                attr_dict['>'].append(data_target.iloc[i])
+            else:
+                attr_dict['<='].append(data_target.iloc[i])
+        
+        return attr_dict
+        
+    @staticmethod
+    def info_gain(data_attr, data_target, is_continue=False, split_index=0):
         # save the entropy of the current data_target
         entropy_parent = Calculate.entropy(data_target)
 
-        # Clustering data_target based on value on attribute
-        attr_dict = Calculate.split_data(data_attr, data_target)
+        if is_continue:
+            splitter = (data_attr[split_index]+data_attr[split_index+1])/2
+            attr_dict = Calculate.split_continue(data_attr,data_target, splitter)
+        else:
+            # Clustering data_target based on value on attribute
+            attr_dict = Calculate.split_data(data_attr, data_target)
 
         # Count the info gain
         result_info_gain = entropy_parent
@@ -55,20 +73,28 @@ class Calculate:
         return result_info_gain
 
     @staticmethod
-    def gain_ratio(data_attr, data_target):
+    def gain_ratio(data_attr, data_target, is_continue=False, split_index=0):
         # save the entropy of the current data_target
         entropy_parent = Calculate.entropy(data_target)
 
-        # Clustering data_target based on value on attribute
-        attr_dict = Calculate.split_data(data_attr, data_target)
+        if is_continue:
+            splitter = (data_attr[split_index]+data_attr[split_index+1])/2
+            attr_dict = Calculate.split_continue(data_attr,data_target, splitter)
+
+        else:
+            # Clustering data_target based on value on attribute
+            attr_dict = Calculate.split_data(data_attr, data_target)
 
         # Count the info gain
         info_gain = entropy_parent
         split_info = 0
         for attr in attr_dict:
             info_gain -= len(attr_dict[attr])/len(data_target)*Calculate.entropy(attr_dict[attr])
-            split_info -= len(attr_dict[attr])/len(data_target)*math.log(len(attr_dict[attr])/len(data_target), 2)
-
+            if len(attr_dict[attr]) != 0:
+                split_info -= len(attr_dict[attr])/len(data_target)*math.log(len(attr_dict[attr])/len(data_target), 2)
+            else:
+                return 0
+        
         return info_gain/split_info
 
     @staticmethod
@@ -97,3 +123,11 @@ class Calculate:
                 best_label_n = target_list[target]
         
         return best_label
+
+    @staticmethod
+    def split_by_threshold(data, attribute_name, best_splitter):
+        attr_dict = dict()
+        attr_dict['>'] = data.loc[data[attribute_name] > best_splitter]
+        attr_dict['<='] = data.loc[data[attribute_name] <= best_splitter]
+
+        return attr_dict
