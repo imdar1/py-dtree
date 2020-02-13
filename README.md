@@ -33,6 +33,7 @@ Here is some examples of using this library:
     tree.print_tree()
     ```
     You can set the strategy for selecting an attribute using gain ratio or information gain by modify the `gain_ratio` attribute when MyC45 is instantiated. You are also able to choose whether you want to prune the tree or not by using `prune` argument at `fit` function. 
+    
 2. **Using MyID3**
     ```python
     import pandas as pd
