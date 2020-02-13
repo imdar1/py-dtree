@@ -1,14 +1,22 @@
 import pandas as pd
 import math
+
 from node import Node, Tree
 from calculate import Calculate
 
 class MyID3():
     def __init__(self, gain_ratio=False):
+        '''
+            MyID3 constructor.
+        '''
+
         self.gain_ratio = gain_ratio
 
-
     def fit(self, data, attributes, target_name):
+        '''
+            Built and return decision tree using ID3 algorithm
+        '''
+
         data_target = data[target_name]
         
         # Data target contains one label
@@ -80,6 +88,10 @@ class MyID3():
             return dtree
 
     def _get_result(self, dtree, test):
+        '''
+            Get predicted result of test which only contains one tuple
+        '''
+
         if dtree.value.result is not None:
             return dtree.value.result
         
@@ -97,6 +109,10 @@ class MyID3():
         return self._get_result(dtree.children[i], test)
             
     def predict(self, dtree, data_test):
+        '''
+            Predict data_test based on dtree
+        '''
+        
         predicted_result = list()
     
         # Traverse through each row
@@ -105,12 +121,3 @@ class MyID3():
         
         return predicted_result
         
-
-data = pd.read_csv("play_tennis.csv")
-# print(list(data['outlook']))
-dTree = MyID3(gain_ratio=True);
-dtree_view = dTree.fit(data, ['outlook', 'temp', 'humidity', 'wind'], 'play')
-dtree_view.print_tree()
-
-hasil = dTree.predict(dtree_view, data[['outlook', 'temp', 'humidity', 'wind']])
-print(hasil)
