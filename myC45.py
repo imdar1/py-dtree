@@ -29,7 +29,6 @@ class MyC45:
         '''
             Find threshold of data_attr with respect to data_target
         '''
-
         attr_name = data_attr.columns[0]
         target_name = data_target.columns[0]
         data = pd.concat([data_attr,data_target], axis = 1)
@@ -119,7 +118,7 @@ class MyC45:
             return Tree(Node(None,
                              entropy_data_target,
                              value_dict, 
-                             result = Calculate.most_label(data_target),
+                             result = Calculate.most_label(data[target]),
                              is_leaf = True))
         
         # Find best attribute and build tree recursively
@@ -137,7 +136,7 @@ class MyC45:
                 best_point = best_treshold[1]
                 best_splitter = best_treshold[0]
         for feature in discrete_features:
-            point = Calculate.info_gain(data[attr], data_target)
+            point = Calculate.info_gain(data[feature], data[target])
             if point > best_point:
                 best_point = point
                 best_attr = str(feature)
