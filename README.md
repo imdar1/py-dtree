@@ -45,3 +45,7 @@ Here is some examples of using this library:
     ```
     Like MyC45, you can also set the strategy for selecting an attribute using gain ratio or information gain by modify the `gain_ratio` attribute when MyID3 is instantiated. Note that this algorithm only works for discrete attribute. The algorithm itself is referenced from **Tom Mitchell** book from page 56.
 
+Credits
+------
+1. Isa Mujahid Darussalam - 13517002
+2. M. Fikri Hizbullah - 13517104
