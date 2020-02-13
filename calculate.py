@@ -131,3 +131,14 @@ class Calculate:
         attr_dict['<='] = data.loc[data[attribute_name] <= best_splitter]
 
         return attr_dict
+
+    @staticmethod
+    def most_value(value_dict):
+        best_number = 0
+        best_value = ''
+        for value in value_dict:
+            if value_dict[value] > best_number:
+                best_value = value
+                best_number = value_dict[value]
+
+        return best_value
