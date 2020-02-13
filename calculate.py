@@ -97,3 +97,14 @@ class Calculate:
                 best_label_n = target_list[target]
         
         return best_label
+
+    @staticmethod
+    def most_value(value_dict):
+        best_number = 0
+        best_value = ''
+        for value in value_dict:
+            if value_dict[value] > best_number:
+                best_value = value
+                best_number = value_dict[value]
+
+        return best_value
