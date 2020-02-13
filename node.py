@@ -3,7 +3,7 @@
 class Node:
     def __init__(self, current_node, info_gain, values, edge = None, result = None, is_leaf=False):
         self.current_node = current_node
-        self.info_gain = info_gain
+        self.info_gain = round(info_gain,3)
         self.values = values
         self.edge = edge
         self.result = result
@@ -21,7 +21,7 @@ class Node:
         if self.is_leaf:
             node_str += 'ENTROPY: '
         else:
-            node_str += 'INFO_GAIN: '
+            node_str += 'POINT: '
         node_str += str(self.info_gain)
 
         if self.result is not None:
