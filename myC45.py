@@ -158,7 +158,7 @@ class MyC45:
 
         for attribute in list_attribute:
             data = pd.DataFrame(data=list_attribute[attribute]).reset_index(drop=True)
-            dtree.add_child(self.fit(data, features, target))
+            dtree.add_child(self.__fit_without_prune(data, features, target))
             if is_discrete:
                 dtree.children[i].value.edge = attribute
             else:
