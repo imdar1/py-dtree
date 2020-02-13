@@ -13,10 +13,10 @@ class Node:
         node_str = ''
 
         if self.edge is not None:
-            node_str += '['+ str(self.edge) +']'
+            node_str += '['+ str(self.edge) +']' + '; '
 
         if self.current_node is not None:
-            node_str += '; '+str(self.current_node)
+            node_str += str(self.current_node)
 
         node_str += '; VALUES: '+ str(self.values)
 
