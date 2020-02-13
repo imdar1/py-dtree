@@ -2,14 +2,18 @@ import pandas as pd
 import math
 import numpy as np
 import re
+import copy
 
 from myID3 import MyID3
 from node import Node, Tree
 from calculate import Calculate
-from sklearn.datasets import load_iris
 
 class MyC45:
     def __init__(self, gain_ratio=False):
+        '''
+            MyC45 constructor.
+        '''
+
         self.gain_ratio = gain_ratio
 
     def is_attr_continue(self, data_attr):
@@ -17,10 +21,15 @@ class MyC45:
             Assume all values are the same type.
             Return True if the first value is continue
             Otherwise, return False
-        '''    
+        '''
+        
         return isinstance(data_attr[0],(int, float)) 
 
     def find_threshold(self, data_attr, data_target):
+        '''
+            Find threshold of data_attr with respect to data_target
+        '''
+
         attr_name = data_attr.columns[0]
         target_name = data_target.columns[0]
         data = pd.concat([data_attr,data_target], axis = 1)
@@ -50,7 +59,29 @@ class MyC45:
         return [best_splitter, best_point]
 
 
-    def fit(self, data, features, target):
+    def fit(self, data, features, target, prune=False):
+        '''
+            Built decision tree using C4.5 algorithm
+        '''
+
+        self.features = copy.deepcopy(features)
+        self.target = copy.deepcopy(target)
+
+        # Handle missing value using most common value
+        data = data.fillna(data.mode().iloc[0])
+
+        dtree = self.__fit_without_prune(data, features, target)
+        if not prune:
+            return dtree
+        else:
+            dtree = self.prune_tree(dtree, data)
+            return dtree
+
+    def __fit_without_prune(self, data, features, target):
+        '''
+            Built entire decision tree without pruning
+        '''
+
         continuous_features = list()
         discrete_features = list()
         for feature in features:
@@ -117,9 +148,6 @@ class MyC45:
         for key, value in value_list.items():
             value_dict[key] = len(value_list[key])
         dtree = Tree(Node(best_attr, best_point, value_dict))
-
-        # Delete usage attribute in attributes
-        # features.remove(best_attr)
         
         # Scan all posible value to be generated subtree
         if is_discrete:
@@ -131,7 +159,6 @@ class MyC45:
 
         for attribute in list_attribute:
             data = pd.DataFrame(data=list_attribute[attribute]).reset_index(drop=True)
-            # data.drop(best_attr, axis = 1, inplace=True)
             dtree.add_child(self.fit(data, features, target))
             if is_discrete:
                 dtree.children[i].value.edge = attribute
@@ -142,6 +169,9 @@ class MyC45:
         return dtree
 
     def predict(self, dtree, data_test):
+        '''
+            Predict data_test based on dtree
+        '''
         predicted_result = list()
     
         # Traverse through each row
@@ -151,11 +181,15 @@ class MyC45:
         return predicted_result
 
     def _get_result(self, dtree, test):
+        '''
+            Get predicted result of test which only contains one tuple
+        '''
+
         if dtree.value.result is not None:
             return dtree.value.result
         
         curr_attr = dtree.value.current_node
-        is_continue = self.is_attr_continue(list(data[curr_attr]))
+        is_continue = self.is_attr_continue(list(test[curr_attr]))
         curr_data = test[curr_attr].iloc[0]
         
         if is_continue:
@@ -176,26 +210,73 @@ class MyC45:
 
         return self._get_result(dtree.children[i], test)
 
+    def get_test_data(self, data):
+        '''
+            Return random 0.2 of data
+        '''
+        size = 0.2 * len(data)
+        chosen_idx = Calculate.get_list_rand_numbers(len(data), size)
+        return data.iloc[chosen_idx]
 
+    def is_same_accuracy(self, data_real, data_test):
+        '''
+            Check whether data_real is identical with data_test or not
+            If the two lists are identical, then the accuracy remains the same,
+            Otherwise the accuracy is decreased
+        '''
+        return str(data_real) == str(data_test)
 
-# data = pd.read_csv("play_tennis.csv")
-# dTree = MyC45(gain_ratio=True)
-# dTree.find_threshold(data[['outlook']],data[['play']])
-# dtree_view = dTree.fit(data, ['outlook', 'temp', 'humidity', 'wind'], 'play')
-# dtree_view.print_tree()
+    def prune_tree(self, dtree, data):
+        '''
+            Prune each possible node from bottom recursively
+            by calling recursive prune function
+        '''
+        return self.prune(dtree, dtree, data)
+    
+    def prune(self, dtree, dtree_root, data):
+        '''
+            Post-prune dtree recursively and return the new tree
+        '''
 
-iris = load_iris()
-data = pd.DataFrame(data= np.c_[iris['data'], iris['target']],
-                    columns= iris['feature_names'] + ['target'])
-dTree = MyC45(True)
-dtree_view = dTree.fit(data, iris['feature_names'], 'target')
-dtree_view.print_tree()
-print('ACTUAL: ', iris['target'])
-print('FEATURE: ', iris['feature_names'])
-hasil = dTree.predict(dtree_view, data[iris['feature_names']])
-print('PREDICTED: ', hasil)
+        is_next_leaf = len(dtree.children) != 0
+        for child in dtree.children:
+            if child.children:
+                is_next_leaf = False
+                break
 
-# splitter = data['sepal length (cm)'].iloc[15]
-# print(type(splitter))
-# dTree.find_threshold(data[['sepal length (cm)']],data[['target']])
-# print(data))
+        if is_next_leaf:
+            # Prune this node
+            ntree = copy.deepcopy(dtree) # Backup a copy of current node
+            dtree.children = list()
+            dtree.value.current_node = None
+            dtree.value.result = Calculate.most_value(dtree.value.values)
+            dtree.value.is_leaf = True
+        
+            # Check accuracy if this node being pruned
+            data_test = self.get_test_data(data)
+            predicted_result = self.predict(dtree_root, data_test[self.features])
+            
+            is_same_accuracy = self.is_same_accuracy(list(data_test[self.target]), predicted_result)
+            if is_same_accuracy:
+                # if accuracy remains the same, return the new node
+                return dtree
+            else:
+                # otherwise return the same node
+                return ntree
+        else:
+            for i in range(len(dtree.children)):
+                # Recursively check every children that is node
+                dtree.children[i] = self.prune(dtree.children[i], dtree_root, data)
+            
+            # Again, check if the current pruned tree satisfied the condition to be pruned
+            is_next_leaf = len(dtree.children) != 0
+            for child in dtree.children:
+                if child.children:
+                    is_next_leaf = False
+                    break
+            
+            if is_next_leaf:
+                dtree = self.prune(dtree, dtree_root, data)
+
+            # Return the new tree  
+            return dtree  
