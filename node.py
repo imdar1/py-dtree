@@ -13,21 +13,15 @@ class Node:
         node_str = ''
 
         if self.edge is not None:
-            node_str += '['+ str(self.edge) +']'+'; '
+            node_str += '['+ str(self.edge) +']'
 
         if self.current_node is not None:
-            node_str += str(self.current_node)+'; ' 
-        
-        if self.is_leaf:
-            node_str += 'ENTROPY: '
-        else:
-            node_str += 'POINT: '
-        node_str += str(self.info_gain)
+            node_str += '; '+str(self.current_node)
+
+        node_str += '; VALUES: '+ str(self.values)
 
         if self.result is not None:
             node_str += '; RESULT: '+ str(self.result)
-        
-        node_str += '; VALUES: '+ str(self.values)
 
         return node_str
 
