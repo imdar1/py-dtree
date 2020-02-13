@@ -36,7 +36,7 @@ class MyID3():
             return tree
         
         # Nothing attribute shall be chosen
-        if len(attributes) == 0: # Masi salah
+        if len(attributes) == 0:
             # Set current_node, info_gain, values
             value_list = Calculate.get_unique_data(data, target_name)
             value_dict = dict()
